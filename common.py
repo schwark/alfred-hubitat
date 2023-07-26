@@ -64,7 +64,7 @@ def hubitat_api(wf, api_key, hub_id, hub_ip, url, data=None):
     headers = {'Accept':"application/json"}
     params = {'access_token': api_key}
     r = None
-    args = ','.join(map(lambda x: quote_plus(json.dumps(x) if isinstance(x, dict) else x), data)) if data else ''
+    args = ','.join(map(lambda x: quote_plus(json.dumps(x) if isinstance(x, dict) else str(x)), data)) if data else ''
     url = url+('/' if args else '')+args
     r = web.get(url, params, headers)
 
@@ -118,7 +118,6 @@ def colorTemperatureToRGB(kelvin):
         clamp(green, 0, 255),
         clamp(blue,  0, 255))
     
-
 def clamp( x, min, max ):
     if(x<min):
         return min
@@ -148,3 +147,8 @@ def device_color(attributes, colors):
             return inv_colors['#'+rgb]
     return rgb
         
+def device_status(wf, api_key, hub_id, hub_ip, id):
+    result = hubitat_api(wf, api_key, hub_id, hub_ip, '/devices/'+id)
+    result = get_attributes(result) if result else None
+    return result
+    

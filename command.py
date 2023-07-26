@@ -5,7 +5,8 @@ import re
 import argparse
 from workflow.workflow import MATCH_ATOM, MATCH_STARTSWITH, MATCH_SUBSTRING, MATCH_ALL, MATCH_INITIALS, MATCH_CAPITALS, MATCH_INITIALS_STARTSWITH, MATCH_INITIALS_CONTAIN
 from workflow import Workflow, ICON_WEB, ICON_NOTE, ICON_BURN, ICON_SWITCH, ICON_HOME, ICON_COLOR, ICON_INFO, ICON_SYNC, web, PasswordNotFound
-from common import qnotify, error, hubitat_api, get_device, get_stored_data, discover_hub, get_device_capabilities, get_attributes
+from common import qnotify, error, hubitat_api, get_device, get_stored_data, discover_hub, get_device_capabilities, get_attributes, device_status
+from time import sleep
 
 log = None
 
@@ -31,9 +32,9 @@ def get_colors():
 def get_color(name, colors):
     name = name.lower().replace(' ','')
     if re.match('[0-9a-f]{6}', name):
-        return '#'+name.upper()
+        return name.upper()
     elif name in colors:
-        return colors[name].upper()
+        return colors[name].upper()[1:]
     return ''
 
 def get_device_commands(device, commands):
@@ -47,9 +48,9 @@ def get_device_commands(device, commands):
 
 def preprocess_device_command(wf, api_key, hub_id, hub_ip, args):
     if 'toggle' == args.device_command:
-        status = hubitat_api(wf, api_key, hub_id, hub_ip, '/devices/'+args.device_uid)
-        if status:
-            state = get_attributes(status)['switch']
+        status = device_status(wf, api_key, hub_id, hub_ip, args.device_uid)
+        if status and 'switch' in status:
+            state = status['switch']
             log.debug("Toggle Switch state is "+state)
             if 'on' == state:
                 args.device_command = 'off'
@@ -81,13 +82,21 @@ def handle_device_commands(wf, api_key, hub_id, hub_ip, args, commands):
 
     data = command['arguments'] if 'arguments' in command else None
     log.debug("Executing Switch Command: "+device_name+" "+args.device_command)
-    url = 'devices/'+args.device_uid+'/'+args.device_command
+    url = 'devices/'+args.device_uid+'/'+command['command']
     result = hubitat_api(wf, api_key, hub_id, hub_ip, url, data)
     success = False
-    if result:
-        attributes = get_attributes(result)
-        if command['attribute'] in attributes:
-            success = attributes[command['attribute']] == (command['arguments'][0] if 'arguments' in command and command['arguments'] else command['command'])
+    i = 0
+    while(i < 2):
+        if result:
+            attributes = result
+            if command['attribute'] in attributes:
+                success = str(attributes[command['attribute']]) == str(command['arguments'][0] if 'arguments' in command and command['arguments'] else command['command'])
+        if not success:
+            sleep(1)
+            i = i + 1
+            result = device_status(wf, api_key, hub_id, hub_ip,args.device_uid)
+        else:
+            break
             
     if success:
         qnotify("Hubitat", device_name+" turned "+args.device_command+' '+(args.device_params[0] if args.device_params else ''))
