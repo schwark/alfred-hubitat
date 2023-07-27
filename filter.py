@@ -11,7 +11,7 @@ log = None
 
 def get_device_icon(device):
     capabilities = get_device_capabilities(device)
-    if 'ThermostatMode' in capabilities:
+    if 'Thermostat' in capabilities:
         icon = 'thermostat'
     elif 'Lock' in capabilities:
         icon = 'lock'

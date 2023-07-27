@@ -7,6 +7,7 @@ from workflow.workflow import MATCH_ATOM, MATCH_STARTSWITH, MATCH_SUBSTRING, MAT
 from workflow import Workflow, ICON_WEB, ICON_NOTE, ICON_BURN, ICON_SWITCH, ICON_HOME, ICON_COLOR, ICON_INFO, ICON_SYNC, web, PasswordNotFound
 from common import qnotify, error, hubitat_api, get_device, get_stored_data, discover_hub, get_device_capabilities, get_attributes, device_status
 from time import sleep
+from colorsys import rgb_to_hls, hls_to_rgb
 
 log = None
 
@@ -36,6 +37,14 @@ def get_color(name, colors):
     elif name in colors:
         return colors[name].upper()[1:]
     return ''
+
+def get_color_hls(name, colors):
+    hex = get_color(name, colors)
+    r = int(hex[0:1], 16)
+    g = int(hex[2:3], 16)
+    b = int(hex[4:5], 16)
+    (hue, level, saturation) = rgb_to_hls(r, g, b)
+    return {"hue": hue, "saturation": saturation, "level": level}
 
 def get_device_commands(device, commands):
     result = []
@@ -215,7 +224,7 @@ def main(wf):
                 'command': 'setColor',
                 'arguments': [
                     {
-                        'hex': lambda: get_color(args.device_params[0], colors)
+                        'hex':lambda: get_color(args.device_params[0], colors)
                     }
                 ],
                 'attribute': 'colorTemperature'                
