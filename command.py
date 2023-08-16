@@ -323,24 +323,25 @@ def main(wf):
     try:
         mode = wf.get_password('hubitat_mode')
     except PasswordNotFound:  # Mode has not yet been set
-        mode = 'local'
+        mode = 'auto'
 
+    try:
+        hub_id = wf.get_password('hubitat_hub_id')
+    except PasswordNotFound:  # Hub ID has not yet been set
+        error('Hub ID not found')
+        return 0
+    try:
+        hub_ip = wf.get_password('hubitat_hub_ip')
+    except PasswordNotFound:  # Hub IP has not yet been set
+        hub_ip = discover_hub()
+        if not hub_ip:
+            error('Hub IP not found')
+            return 0
+        
     if 'cloud' == mode:
         hub_ip = None
-        try:
-            hub_id = wf.get_password('hubitat_hub_id')
-        except PasswordNotFound:  # Hub ID has not yet been set
-            error('Hub ID not found')
-            return 0
-    else:
+    elif 'local' == mode:
         hub_id = None
-        try:
-            hub_ip = wf.get_password('hubitat_hub_ip')
-        except PasswordNotFound:  # Hub IP has not yet been set
-            hub_ip = discover_hub()
-            if not hub_ip:
-                error('Hub IP not found')
-                return 0
         
     # Update devices if that is passed in
     if args.update:  

@@ -4,6 +4,13 @@ import subprocess
 from urllib.parse import quote_plus
 from math import log, pow
 from colorsys import rgb_to_hls, hls_to_rgb
+import subprocess
+
+def get_mode(wf, ip):
+    if not ip: return 'cloud'
+    output = str(subprocess.check_output("ping -o -c 3 -W 3000 "+ip, shell=True))
+    wf.logger.debug(output)
+    return 'local' if output and "bytes from "+ip in output else 'cloud'
 
 '''
 import socket
@@ -60,7 +67,8 @@ def get_device(wf, device_uid):
     return next((x for x in devices if device_uid == x['id']), None)
 
 def hubitat_api(wf, api_key, hub_id, hub_ip, url, data=None):
-    base_url = 'https://cloud.hubitat.com/api/'+hub_id+'/apps/5/' if hub_id else 'http://'+hub_ip+'/apps/api/5/'
+    mode = get_mode(wf, hub_ip)
+    base_url = 'https://cloud.hubitat.com/api/'+hub_id+'/apps/5/' if ('cloud' == mode and hub_id) else 'http://'+hub_ip+'/apps/api/5/'
     url = base_url+url
     headers = {'Accept':"application/json"}
     params = {'access_token': api_key}
@@ -155,4 +163,3 @@ def device_status(wf, api_key, hub_id, hub_ip, id):
     result = hubitat_api(wf, api_key, hub_id, hub_ip, '/devices/'+id)
     result = get_attributes(result) if result else None
     return result
-    
