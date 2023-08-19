@@ -8,9 +8,10 @@ import subprocess
 
 def get_mode(wf, ip):
     if not ip: return 'cloud'
-    output = str(subprocess.check_output("ping -o -c 3 -W 3000 "+ip, shell=True))
+    ip = ip.strip()
+    output = (subprocess.check_output("ping -o -c 3 -W 3000 "+ip, shell=True)).decode('utf-8')
     wf.logger.debug(output)
-    return 'local' if output and "bytes from "+ip in output else 'cloud'
+    return 'local' if (output and "bytes from "+ip in output) else 'cloud'
 
 '''
 import socket
@@ -68,6 +69,7 @@ def get_device(wf, device_uid):
 
 def hubitat_api(wf, api_key, hub_id, hub_ip, url, data=None):
     mode = get_mode(wf, hub_ip)
+    wf.logger.debug("using mode "+mode)
     base_url = 'https://cloud.hubitat.com/api/'+hub_id+'/apps/5/' if ('cloud' == mode and hub_id) else 'http://'+hub_ip+'/apps/api/5/'
     url = base_url+url
     headers = {'Accept':"application/json"}
