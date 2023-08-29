@@ -150,11 +150,11 @@ def device_color(attributes, colors):
         rgb = attributes['RGB']
     if not rgb and 'colorName' in attributes and attributes['colorName']:
         return attributes['colorName']
+    if not rgb and 'colorTemperature' in attributes and attributes['colorTemperature']:
+        rgb = colorTemperatureToRGB(attributes['colorTemperature'])
     if not rgb and 'hue' in attributes and attributes['hue'] and 'saturation' in attributes and attributes['saturation'] and 'level' in attributes and attributes['level']:
         (r, g, b) = hls_to_rgb(attributes['hue'], attributes['level'], attributes['saturation'])
         rgb = "%x%x%x" % int(r), int(g), int(b)
-    if not rgb and 'colorTemperature' in attributes and attributes['colorTemperature']:
-        rgb = colorTemperatureToRGB(attributes['colorTemperature'])
     if rgb:
         inv_colors = {v: k for k, v in colors.items()}
         if rgb in inv_colors:
