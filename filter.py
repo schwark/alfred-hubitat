@@ -76,12 +76,19 @@ def get_device_commands(wf, device, commands):
             for command, map in commands.items():
                 if capability == map['capability']:
                     result.append(command)
-    # start with off if available                    
-    result.insert(0, result.pop(result.index('off')))                
-    # start with on if available                    
-    result.insert(0, result.pop(result.index('on')))                
-    # start with toggle if available                    
-    result.insert(0, result.pop(result.index('toggle')))                
+                    
+        # start with off if available                    
+        if 'off' in result: 
+            result.insert(0, result.pop(result.index('off')))                
+        # start with on if available       
+        if 'on' in result:
+            result.insert(0, result.pop(result.index('on')))                
+        # start with toggle if available
+        if 'toggle' in result:
+            result.insert(0, result.pop(result.index('toggle'))) 
+        if 'togglock' in result:      
+            result.insert(0, result.pop(result.index('togglock')))       
+
     return result
 
 def get_filtered_devices(wf, query, devices, commands):
@@ -267,6 +274,11 @@ def main(wf):
                 'command': 'lock'
         }, 
         'unlock': {
+                'component': 'main',
+                'capability': 'Lock',
+                'command': 'unlock'
+        },
+        'togglock': {
                 'component': 'main',
                 'capability': 'Lock',
                 'command': 'unlock'

@@ -65,6 +65,15 @@ def preprocess_device_command(wf, api_key, hub_id, hub_ip, args):
                 args.device_command = 'off'
             else:
                 args.device_command = 'on'
+    if 'togglock' == args.device_command:
+        status = device_status(wf, api_key, hub_id, hub_ip, args.device_uid)
+        if status and 'lock' in status:
+            state = status['lock']
+            log.debug("Toggle Lock state is "+state)
+            if 'locked' == state:
+                args.device_command = 'unlock'
+            else:
+                args.device_command = 'lock'
     return args.device_command
 
 def handle_device_commands(wf, api_key, hub_id, hub_ip, args, commands):
@@ -213,6 +222,12 @@ def main(wf):
                 'attribute': 'lock'                
         }, 
         'unlock': {
+                'component': 'main',
+                'capability': 'Lock',
+                'command': 'unlock',
+                'attribute': 'lock'                
+        },
+        'togglock': {
                 'component': 'main',
                 'capability': 'Lock',
                 'command': 'unlock',
