@@ -439,11 +439,14 @@ def main(wf):
         try:
             hub_ip = wf.get_password('hubitat_hub_ip')
         except PasswordNotFound:  # Hub IP has not yet been set
-            hub_ip = discover_hub()
+            try:
+                hub_ip = None #discover_hub()
+            except:
+                pass
             wf.logger.debug('discovered hub ip is '+(hub_ip or ''))
             if not hub_ip:
                 wf.add_item('No Hub IP set in local mode...',
-                            'Please use hb hubip to set your Hubitat Hub IP or revert to cloud mode',
+                            'Please use hb ip to set your Hubitat Hub IP or revert to cloud mode',
                             valid=False,
                             icon=ICON_NOTE)
                 wf.send_feedback()
