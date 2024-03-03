@@ -11,10 +11,20 @@ chmod +x workflow-build
 ```
 * You will need a personal access token from the SmartThings Developer Portal at https://account.smartthings.com/tokens
 
-## API Key
+## Configuration
 
 ```
 hb apikey <access-token>
+```
+This should only be needed once per install or after a reinit
+
+```
+hb ip <hub-ip>
+```
+This should only be needed once per install or after a reinit
+
+```
+hb mode <local|cloud>
 ```
 This should only be needed once per install or after a reinit
 
