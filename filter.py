@@ -484,55 +484,59 @@ def main(wf):
         devices = get_filtered_devices(wf, query, devices, commands)
 
         if devices:
-            args.device_command = 'on' if 1 == len(devices) and devices[0]['type'] == 'Scene Activator' else args.device_command
-
-            if 1 == len(devices) and should_show_status(wf):
+            if 1 == len(devices):
                 device = devices[0]
-                wf.add_item(title=device['label'],
-                        subtitle=device_status(wf, api_key, hub_id, hub_ip, device, colors),
-                        arg=' --device-uid '+device['id']+' --device-command '+args.device_command,
-                        autocomplete=device['label']+' '+args.device_command,
-                        valid=False,
-                        icon=get_device_icon(device))
-            if 1 == len(devices) and (not args.device_command or args.device_command not in commands):
-                # Single device only, no command or not complete command yet so populate with all the commands
-                device = devices[0]
-                device_commands = get_device_commands(wf, device, commands)
-                device_commands = list(filter(lambda x: x.startswith(args.device_command), device_commands))
-                log.debug('args.device_command is '+args.device_command)
-                for command in device_commands:
+                icon = get_device_icon(device)
+                if 'scene' in icon:
+                    default_command = 'on'
+                elif 'lock' in icon:
+                    default_command = 'togglock'
+                else:
+                    default_command = 'toggle'
+                
+                if should_show_status(wf):
                     wf.add_item(title=device['label'],
-                            subtitle='Turn '+device['label']+' '+command+' '+(' '.join(args.device_params) if args.device_params else ''),
-                            arg=' --device-uid '+device['id']+' --device-command '+command+' --device-params '+(' '.join(args.device_params)),
-                            autocomplete=device['label']+' '+command,
-                            valid=bool('status' != command and ('arguments' not in commands[command] or args.device_params)),
-                            icon=get_device_icon(device))
-            elif 1 == len(devices) and (args.device_command and args.device_command in commands and args.device_command in command_params):
-                # single device and has command already - populate with params?
-                device = devices[0]
-                param_list = command_params[args.device_command]['values']
-                param_start = args.device_params[0] if args.device_params else ''
-                param_list = list(filter(lambda x: x.startswith(param_start), param_list))
-                param_list.sort()
-                check_regex = False
-                if not param_list and command_params[args.device_command]['regex']:
-                    param_list.append(args.device_params[0].lower())
-                    check_regex = True
-                for param in param_list:
+                            subtitle=device_status(wf, api_key, hub_id, hub_ip, device, colors),
+                            arg=' --device-uid '+device['id']+' --device-command '+default_command,
+                            autocomplete=device['label']+' '+default_command,
+                            valid=True,
+                            icon=icon)
+                if (not args.device_command or args.device_command not in commands):
+                    # Single device only, no command or not complete command yet so populate with all the commands
+                    device_commands = get_device_commands(wf, device, commands)
+                    device_commands = list(filter(lambda x: x.startswith(args.device_command), device_commands))
+                    log.debug('args.device_command is '+args.device_command)
+                    for command in device_commands:
+                        wf.add_item(title=device['label'],
+                                subtitle='Turn '+device['label']+' '+command+' '+(' '.join(args.device_params) if args.device_params else ''),
+                                arg=' --device-uid '+device['id']+' --device-command '+command+' --device-params '+(' '.join(args.device_params)),
+                                autocomplete=device['label']+' '+command,
+                                valid=bool('status' != command and ('arguments' not in commands[command] or args.device_params)),
+                                icon=icon)
+                elif (args.device_command and args.device_command in commands and args.device_command in command_params):
+                    # single device and has command already - populate with params?
+                    param_list = command_params[args.device_command]['values']
+                    param_start = args.device_params[0] if args.device_params else ''
+                    param_list = list(filter(lambda x: x.startswith(param_start), param_list))
+                    param_list.sort()
+                    check_regex = False
+                    if not param_list and command_params[args.device_command]['regex']:
+                        param_list.append(args.device_params[0].lower())
+                        check_regex = True
+                    for param in param_list:
+                        wf.add_item(title=device['label'],
+                                subtitle='Turn '+device['label']+' '+args.device_command+' '+param,
+                                arg=' --device-uid '+device['id']+' --device-command '+args.device_command+' --device-params '+param,
+                                autocomplete=device['label']+' '+args.device_command,
+                                valid=bool(not check_regex or re.match(command_params[args.device_command]['regex'], param)),
+                                icon=icon)
+                elif ('status' == args.device_command):
                     wf.add_item(title=device['label'],
-                            subtitle='Turn '+device['label']+' '+args.device_command+' '+param,
-                            arg=' --device-uid '+device['id']+' --device-command '+args.device_command+' --device-params '+param,
-                            autocomplete=device['label']+' '+args.device_command,
-                            valid=bool(not check_regex or re.match(command_params[args.device_command]['regex'], param)),
-                            icon=get_device_icon(device))
-            elif 1 == len(devices) and ('status' == args.device_command):
-                device = devices[0]
-                wf.add_item(title=device['label'],
-                        subtitle=device_status(wf, api_key, hub_id, hub_ip, device, colors),
-                        arg=' --device-uid '+device['id']+' --device-command '+args.device_command,
-                        autocomplete=device['label']+' '+args.device_command,
-                        valid=False,
-                        icon=get_device_icon(device))
+                            subtitle=device_status(wf, api_key, hub_id, hub_ip, device, colors),
+                            arg=' --device-uid '+device['id']+' --device-command '+default_command,
+                            autocomplete=device['label']+' '+default_command,
+                            valid=True,
+                            icon=icon)
             else:
                 # Loop through the returned devices and add an item for each to
                 # the list of results for Alfred
