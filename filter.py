@@ -156,6 +156,30 @@ def device_status(wf, api_key, hub_id, hub_ip, device, colors):
             'tag': 'contact',
             'icon': u'🔓'
         },
+        'airQualityIndex': {
+            'tag': 'airQualityIndex',
+            'icon': u'💨'
+        },
+        'carbonDioxide': {
+            'tag': 'carbonDioxide',
+            'icon': u'😤'
+        },
+        'carbonMonoxide': {
+            'tag': 'carbonMonoxide',
+            'icon': u'💀'
+        },
+        'humidity': {
+            'tag': 'humidity',
+            'icon': u'🧖'
+        },
+        'temperature': {
+            'tag': 'temperature',
+            'icon': u'🌡️'
+        },
+        'smoke': {
+            'tag': 'smoke',
+            'icon': u'🔥'
+        },
         'thermostat': [
         {
             'tag': 'heatingSetpoint',
