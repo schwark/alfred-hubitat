@@ -9,7 +9,6 @@ Alfred  Workflow for Hubitat hubs
 chmod +x workflow-build
 ./workflow-build . 
 ```
-* You will need a personal access token from the SmartThings Developer Portal at https://account.smartthings.com/tokens
 
 ## Configuration
 
